@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const cartSchema = require('./shopping-cart')
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -10,11 +11,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  shoppingCarts: [cartSchema],
   token: String
 }, {
   timestamps: true,
   toObject: {
-    // remove `hashedPassword` field when we call `.toObject`
     transform: (_doc, user) => {
       delete user.hashedPassword
       return user
