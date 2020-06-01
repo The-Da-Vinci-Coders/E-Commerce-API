@@ -31,7 +31,7 @@ router.get('/shopping-cart/:id', requireToken, (req, res, next) => {
     .catch(next)
 })
 
-router.post('/shopping-cart', requireToken, (req, res, next) => {
+router.patch('/shopping-cart', requireToken, (req, res, next) => {
   const shoppingCart = req.body.shoppingCart
   const user = req.user
   User.findById(user)
@@ -39,10 +39,12 @@ router.post('/shopping-cart', requireToken, (req, res, next) => {
       user.shoppingCarts.push(shoppingCart)
       return user.save()
     })
-    .then(shoppingCart => res.status(201).json({ shoppingCart: shoppingCart.toObject() }))
+    // making sure the request returns the CARTS
+    .then(currUser => res.status(201).json({ shoppingCarts: currUser.shoppingCarts.toObject() }))
     .catch(next)
 })
 
+// add product to cart
 router.patch('/shopping-cart/:id', requireToken, (req, res, next) => {
   const id = req.params.id
   const product = req.body.product
