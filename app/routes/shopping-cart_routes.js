@@ -10,12 +10,16 @@ const requireToken = passport.authenticate('bearer', { session: false })
 // GET all movies, this shows all the movies that are listed to the user
 router.get('/shopping-cart/', requireToken, (req, res, next) => {
   User.findById(req.user)
+    .populate('shoppingCarts.products')
     .then(handle404)
-    .then(user => res.status(200).json({ shoppingCart: user.shoppingCarts.toObject() }))
+    .then(user => {
+      console.log(user)
+      return user.shoppingCarts
+    })
+    .then(carts => res.status(200).json({ shoppingCart: carts.toObject() }))
     .catch(next)
 })
 
-// GET a specific movie
 router.get('/shopping-cart/:id', requireToken, (req, res, next) => {
   // get the movie ID from the params
   const id = req.params.id
@@ -27,7 +31,8 @@ router.get('/shopping-cart/:id', requireToken, (req, res, next) => {
   // return the movie
   User.findOne(user)
     .then(handle404)
-    .then(user => res.status(200).json({ shoppingCart: user.shoppingCarts.id(id).toObject() }))
+    .then(user.shoppingCarts.id(id).populate('products'))
+    .then(cart => res.status(200).json({ shoppingCart: cart.toObject() }))
     .catch(next)
 })
 
@@ -52,10 +57,8 @@ router.patch('/shopping-cart/:id', requireToken, (req, res, next) => {
   User.findById(user)
     .then((user) => {
       const shoppingCart = user.shoppingCarts.id(id) // returns a matching subdocument
-      console.log(shoppingCart)
-      console.log(product)
       console.log(user.shoppingCarts)
-      shoppingCart.products.push(product.id) // updates the address while keeping its schema
+      shoppingCart.products.push(product._id) // updates the address while keeping its schema
       return user.save() // saves document with subdocuments and triggers validation
     })
     .then(shoppingCart => res.sendStatus(204))
