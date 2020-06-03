@@ -30,8 +30,9 @@ router.get('/shopping-cart/:id', requireToken, (req, res, next) => {
   // find the user's movie
   // return the movie
   User.findOne(user)
+    .populate('shoppingCarts.products')
     .then(handle404)
-    .then(user.shoppingCarts.id(id).populate('products'))
+    .then(user.shoppingCarts.id(id))
     .then(cart => res.status(200).json({ shoppingCart: cart.toObject() }))
     .catch(next)
 })
@@ -74,9 +75,10 @@ router.patch('/shopping-cart/:id/products', requireToken, (req, res, next) => {
     .then(handle404)
     .then(user => {
       const shoppingCart = user.shoppingCarts.id(id)
-      const newProducts = shoppingCart.products.filter(product => product != productId)
-      user.shoppingCarts.products = newProducts
-      user.save()
+      shoppingCart.products = shoppingCart.products.filter(product => product != productId)
+      // user.shoppingCarts.products = newProducts
+      // console.log(user.shoppingCarts.products)
+      return shoppingCart.parent().save()
     })
     .then(shoppingCart => res.sendStatus(204))
     .catch(next)
