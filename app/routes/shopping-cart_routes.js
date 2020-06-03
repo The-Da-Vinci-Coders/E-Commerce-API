@@ -84,4 +84,19 @@ router.patch('/shopping-cart/:id/products', requireToken, (req, res, next) => {
     .catch(next)
 })
 
+router.patch('/shopping-cart/:id/active', requireToken, (req, res, next) => {
+  const id = req.params.id
+  const user = req.user
+  const shoppingCart = req.body.shoppingCart
+  User.findById(user)
+    .then(handle404)
+    .then(user => {
+      const shoppingCartById = user.shoppingCarts.id(id)
+      shoppingCartById.active = shoppingCart.active
+      return shoppingCartById.parent().save()
+    })
+    .then(shoppingCart => res.sendStatus(204))
+    .catch(next)
+})
+
 module.exports = router
