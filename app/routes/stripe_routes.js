@@ -18,9 +18,7 @@ router.post('/stripe/charge', (req, res, next) => {
 router.post('/stripe/customer', (req, res, next) => {
   const customer = req.body.customer
   const stripe = require('stripe')('sk_test_51Gq3g3HMAAEaJ64PeEPXPhDFJ1uHfN4czO4lBuAfkmh5a7Fr3AD6yU5ZjlKkCZeBmEgS2DsU7ks5q7p4VKassLMB00B9ej0EKe')
-  stripe.customers.create({
-    email: customer.email
-  })
+  stripe.customers.create(customer)
     .then(card => res.status(201).json({ customer: customer }))
     .catch(next)
 })

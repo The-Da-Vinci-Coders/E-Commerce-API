@@ -129,6 +129,18 @@ router.patch('/change-password', requireToken, (req, res, next) => {
     .catch(next)
 })
 
+router.patch('/add-stripe/:id', requireToken, (req, res, next) => {
+  const id = req.params.id
+  const newUser = req.body.user
+  User.findById(id)
+    .then(user => {
+      user.stripeId = newUser.stripeId
+      return user.save()
+    })
+    .then(() => res.sendStatus(204))
+    .catch(next)
+})
+
 router.delete('/sign-out', requireToken, (req, res, next) => {
   // create a new random token for the user, invalidating the current one
   req.user.token = crypto.randomBytes(16)

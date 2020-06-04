@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  stripeId: String,
   shoppingCarts: [cartSchema],
   token: String
 }, {
