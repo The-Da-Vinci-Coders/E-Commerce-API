@@ -6,6 +6,8 @@ const handle404 = customErrors.handle404
 const router = express.Router()
 const passport = require('passport')
 const requireToken = passport.authenticate('bearer', { session: false })
+const deepIndexOf = require('../../lib/deep_indexOf')
+const lodash = require('lodash')
 
 // GET all movies, this shows all the movies that are listed to the user
 router.get('/shopping-cart/', requireToken, (req, res, next) => {
@@ -30,9 +32,8 @@ router.get('/shopping-cart/:id', requireToken, (req, res, next) => {
   // find the user's movie
   // return the movie
   User.findOne(user)
-    .populate('shoppingCarts.products')
     .then(handle404)
-    .then(user.shoppingCarts.id(id))
+    .then(user.shoppingCarts.id(id).populate('products'))
     .then(cart => res.status(200).json({ shoppingCart: cart.toObject() }))
     .catch(next)
 })
@@ -75,25 +76,15 @@ router.patch('/shopping-cart/:id/products', requireToken, (req, res, next) => {
     .then(handle404)
     .then(user => {
       const shoppingCart = user.shoppingCarts.id(id)
-      shoppingCart.products = shoppingCart.products.filter(product => product != productId)
+      const deletedProduct = shoppingCart.products.find(product => product == productId)
+      const index = deepIndexOf(shoppingCart.products, deletedProduct)
+      const prodArray = [...shoppingCart.products]
+      lodash.pullAt(prodArray, index)
+      shoppingCart.products = prodArray
+      // console.log(shoppingCart.products)
       // user.shoppingCarts.products = newProducts
       // console.log(user.shoppingCarts.products)
       return shoppingCart.parent().save()
-    })
-    .then(shoppingCart => res.sendStatus(204))
-    .catch(next)
-})
-
-router.patch('/shopping-cart/:id/active', requireToken, (req, res, next) => {
-  const id = req.params.id
-  const user = req.user
-  const shoppingCart = req.body.shoppingCart
-  User.findById(user)
-    .then(handle404)
-    .then(user => {
-      const shoppingCartById = user.shoppingCarts.id(id)
-      shoppingCartById.active = shoppingCart.active
-      return shoppingCartById.parent().save()
     })
     .then(shoppingCart => res.sendStatus(204))
     .catch(next)
